@@ -79,7 +79,6 @@ def main():
         )
         
         concurrency = st.slider("Concurrency", 1, 10, 3)
-        concurrency = st.slider("Concurrency", 1, 10, 3)
         delay_ms = st.number_input("Delay (ms)", 0, 5000, 0)
         
         st.markdown("---")
