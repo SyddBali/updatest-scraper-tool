@@ -132,9 +132,30 @@ def main():
                 st.warning("Please provide at least one SKU or URL.")
                 return
 
+            # 4. Prepare Indexer (Cached)
+            indexer = None
+            if cms_choice == "Shopify" and origin:
+                from scraper.shopify_catalog import ShopifyCatalogIndexer
+                
+                @st.cache_resource(ttl=3600, show_spinner="Indexing Shopify Catalog...")
+                def get_cached_indexer(url: str):
+                    idx = ShopifyCatalogIndexer(url)
+                    # We need to run async fetch in a sync wrapper for st.cache_resource?
+                    # Or we can cache the object and run fetch if not indexed?
+                    # Better: Run the fetch here using _run
+                    _run(idx.fetch_catalog())
+                    return idx
+                
+                try:
+                    indexer = get_cached_indexer(origin)
+                    st.success(f"Using cached catalog ({len(indexer.catalog)} variants)")
+                except Exception as e:
+                    st.error(f"Failed to index catalog: {e}")
+                    return
+
             with st.spinner(f"Scraping {len(items)} items..."):
                 results = _run(scrape_items(
-                    items, cms_choice, origin, url_pattern, concurrency, delay_ms
+                    items, cms_choice, origin, url_pattern, concurrency, delay_ms, indexer=indexer
                 ))
             
             st.success(f"Completed! Processed {len(results)} items.")

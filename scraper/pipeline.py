@@ -288,19 +288,14 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                        origin: Optional[str],
                        url_pattern: Optional[str],
                        concurrency: int,
-                       delay_ms: int) -> List[Dict]:
+                       delay_ms: int,
+                       indexer: Optional[ShopifyCatalogIndexer] = None) -> List[Dict]:
     results: List[Dict] = []
     
-    # Initialize Catalog Indexer for Shopify
-    indexer = None
-    if cms_choice == "Shopify" and origin:
+    # Initialize Catalog Indexer for Shopify IF NOT PROVIDED
+    if cms_choice == "Shopify" and origin and not indexer:
         try:
             indexer = ShopifyCatalogIndexer(origin)
-            # We fetch the catalog concurrently? No, we need it before processing.
-            # But we can do it inside the client context if we want to reuse client?
-            # The indexer creates its own client. That's fine.
-            # Or we can pass the client? The class creates one.
-            # Let's fetch it now.
             print("Indexing Shopify Catalog... (this may take a moment)")
             await indexer.fetch_catalog()
             print(f"Indexed {len(indexer.catalog)} variants.")

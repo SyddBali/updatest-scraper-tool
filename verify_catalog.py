@@ -16,14 +16,24 @@ async def main():
         {"sku": "73302", "url": None}
     ]
     
-    print("Running Catalog Verification...")
+    # Simulate Caching: Initialize Indexer OUTSIDE scrape_items
+    from scraper.shopify_catalog import ShopifyCatalogIndexer
+    origin = "https://legear.com.au"
+    
+    print("Initializing Indexer (Simulating Cache)...")
+    indexer = ShopifyCatalogIndexer(origin)
+    await indexer.fetch_catalog()
+    print(f"Indexer ready with {len(indexer.catalog)} items.")
+    
+    print("Running Scrape with Cached Indexer...")
     results = await scrape_items(
         items=items,
         cms_choice="Shopify",
-        origin="https://legear.com.au",
+        origin=origin,
         url_pattern=None,
         concurrency=1,
-        delay_ms=100
+        delay_ms=100,
+        indexer=indexer # Pass the pre-loaded indexer
     )
     
     print("\nResults:")
