@@ -338,6 +338,8 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                         
                         # SKU found in catalog!
                         # We have the correct URL and some data.
+                        target_url = catalog_data["product_url"]
+
                         # Calculate discount
                         price = catalog_data.get("price")
                         rrp = catalog_data.get("rrp")
