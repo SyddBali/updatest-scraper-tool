@@ -345,9 +345,13 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                         rrp = catalog_data.get("rrp")
                         discount = None
                         try:
-                            if price and rrp and float(rrp) > float(price):
-                                discount = round((1 - (float(price) / float(rrp))) * 100)
-                        except:
+                            if price and rrp:
+                                price_val = float(price)
+                                rrp_val = float(rrp)
+                                if rrp_val > price_val:
+                                    discount = round((1 - (price_val / rrp_val)) * 100)
+                        except Exception as e:
+                            # Silently fail if conversion fails
                             pass
 
                         # FAST MODE: Skip page fetch

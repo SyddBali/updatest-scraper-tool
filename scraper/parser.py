@@ -486,13 +486,12 @@ def parse_product(html: str, url: str, config: SiteConfig, sku: Optional[str] = 
         group_id, variant_id, all_variant_ids = _extract_shopify_ids(soup, sku)
 
         discount = None
-        # Try calculating first
-        if price is not None and rrp is not None and rrp > 0:
-            discount = round((1 - (price / rrp)) * 100, 2)
+        # Try badge extraction first (more accurate)
+        discount = _extract_discount_badge(soup)
         
-        # If calculation failed or gave 0/negative (unlikely but possible), try badge
-        if not discount:
-            discount = _extract_discount_badge(soup)
+        # If badge extraction failed, try calculating from price/rrp
+        if discount is None and price is not None and rrp is not None and rrp > 0:
+            discount = round((1 - (price / rrp)) * 100, 2)
 
         return {
             "sku": sku,
