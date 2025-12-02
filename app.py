@@ -81,6 +81,12 @@ def main():
         concurrency = st.slider("Concurrency", 1, 10, 3)
         delay_ms = st.number_input("Delay (ms)", 0, 5000, 0)
         
+        fast_mode = False
+        if cms_choice == "Shopify":
+            st.markdown("---")
+            fast_mode = st.checkbox("Fast Mode (Catalog Only)", 
+                                  help="Skip page visits to avoid 429 errors. No breadcrumbs, but instant results.")
+        
         st.markdown("---")
         if st.button("Clear Cache", help="Force re-download of catalog data"):
             st.cache_resource.clear()
@@ -153,14 +159,17 @@ def main():
                 
                 try:
                     indexer = get_cached_indexer(origin)
-                    st.success(f"Using cached catalog ({len(indexer.catalog)} variants)")
+                    if not indexer.catalog:
+                        st.error("Warning: Catalog index is empty! The site might be blocking the download (429). Try 'Clear Cache' and wait a few minutes.")
+                    else:
+                        st.success(f"Using cached catalog ({len(indexer.catalog)} variants)")
                 except Exception as e:
                     st.error(f"Failed to index catalog: {e}")
                     return
 
             with st.spinner(f"Scraping {len(items)} items..."):
                 results = _run(scrape_items(
-                    items, cms_choice, origin, url_pattern, concurrency, delay_ms, indexer=indexer
+                    items, cms_choice, origin, url_pattern, concurrency, delay_ms, indexer=indexer, fast_mode=fast_mode
                 ))
             
             st.success(f"Completed! Processed {len(results)} items.")

@@ -27,7 +27,17 @@ class ShopifyCatalogIndexer:
                     url = f"{self.products_url}?limit={limit_per_page}&page={page}"
                     logger.info(f"Fetching catalog page {page}: {url}")
                     
-                    response = await client.get(url, timeout=30.0)
+                    # Retry logic for 429 Too Many Requests
+                    retries = 3
+                    for attempt in range(retries):
+                        response = await client.get(url, timeout=30.0)
+                        if response.status_code == 429:
+                            wait_time = (attempt + 1) * 2 # 2s, 4s, 6s
+                            logger.warning(f"Rate limited (429) on page {page}. Retrying in {wait_time}s...")
+                            await asyncio.sleep(wait_time)
+                            continue
+                        break
+                    
                     if response.status_code != 200:
                         logger.error(f"Failed to fetch catalog page {page}: {response.status_code}")
                         break
