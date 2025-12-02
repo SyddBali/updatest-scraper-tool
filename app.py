@@ -160,12 +160,13 @@ def main():
                 try:
                     indexer = get_cached_indexer(origin)
                     if not indexer.catalog:
-                        st.error("Warning: Catalog index is empty! The site might be blocking the download (429). Try 'Clear Cache' and wait a few minutes.")
+                        st.warning("Catalog download blocked (429). Switching to slow search mode.")
+                        indexer = None # Force fallback to legacy search
                     else:
                         st.success(f"Using cached catalog ({len(indexer.catalog)} variants)")
                 except Exception as e:
                     st.error(f"Failed to index catalog: {e}")
-                    return
+                    indexer = None
 
             with st.spinner(f"Scraping {len(items)} items..."):
                 results = _run(scrape_items(
