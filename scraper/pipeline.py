@@ -364,6 +364,8 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                              # Fallback to catalog data if page fetch fails
                             results.append({
                                 "sku": sku, "url": url_in, "product_url": target_url,
+                                "group_id": catalog_data.get("product_id"),
+                                "variant_id": catalog_data.get("variant_id"),
                                 "name": catalog_data.get("name"),
                                 "category": catalog_data.get("product_type"),
                                 "breadcrumbs": None,
