@@ -441,10 +441,16 @@ def _extract_discount_badge(soup: BeautifulSoup) -> Optional[float]:
     """
     Extracts discount from badges like "50% OFF".
     """
-    # 1. Look for specific class names (based on user input and common patterns)
-    # User example: c-badge__item--percentage-off
-    for class_name in ["c-badge__item--percentage-off", "percentage-off", "discount-badge", "sale-badge", "badge--sale"]:
-        badge = soup.find(class_=re.compile(class_name, re.I))
+    # First, remove breadcrumb/nav areas to avoid false positives
+    soup_copy = BeautifulSoup(str(soup), "lxml")
+    for nav in soup_copy.find_all(['nav', 'breadcrumb']):
+        nav.decompose()
+    for elem in soup_copy.find_all(class_=re.compile(r'breadcrumb|navigation', re.I)):
+        elem.decompose()
+    
+    # 1. Look for specific badge class names
+    for class_name in ["c-badge__item--percentage-off", "percentage-off", "discount-badge", "sale-badge", "badge--sale", "product-badge"]:
+        badge = soup_copy.find(class_=re.compile(class_name, re.I))
         if badge:
             text = badge.get_text(strip=True)
             # Match "50% OFF" or "-50%"
@@ -455,8 +461,11 @@ def _extract_discount_badge(soup: BeautifulSoup) -> Optional[float]:
                 except ValueError:
                     pass
     
-    # 2. Look for text containing "% OFF"
-    for elem in soup.find_all(string=re.compile(r'\d+%\s*OFF', re.I)):
+    # 2. Look for text containing "% OFF" in product area only
+    # Limit search to main/product containers
+    product_area = soup_copy.find(['main', 'article']) or soup_copy.find(class_=re.compile(r'product|item', re.I)) or soup_copy
+    
+    for elem in product_area.find_all(string=re.compile(r'\d+%\s*OFF', re.I)):
         m = re.search(r'(\d+(?:\.\d+)?)%', elem)
         if m:
             try:
