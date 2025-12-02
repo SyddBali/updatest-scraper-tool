@@ -179,8 +179,14 @@ def main():
             if results:
                 df = pd.DataFrame(results)
                 
-                # Reorder columns for better readability
-                preferred = ["sku", "group_id", "variant_id", "all_variant_ids", "product_url", "name", "price", "rrp", "discount_percent", "category", "breadcrumbs", "image_url", "error"]
+                # Ensure all_variant_ids is string to avoid Arrow errors
+                if "all_variant_ids" in df.columns:
+                    df["all_variant_ids"] = df["all_variant_ids"].astype(str)
+
+                # Reorder columns if possible
+                preferred = ["sku", "product_url", "name", "price", "rrp", "discount_percent", 
+                           "group_id", "variant_id", "all_variant_ids",
+                           "category", "breadcrumbs", "image_url", "error", "url"]
                 cols = [c for c in preferred if c in df.columns] + [c for c in df.columns if c not in preferred]
                 df = df[cols]
 
