@@ -289,7 +289,8 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                        url_pattern: Optional[str],
                        concurrency: int,
                        delay_ms: int,
-                       indexer: Optional[ShopifyCatalogIndexer] = None) -> List[Dict]:
+                       indexer: Optional[ShopifyCatalogIndexer] = None,
+                       fast_mode: bool = False) -> List[Dict]:
     results: List[Dict] = []
     
     # Initialize Catalog Indexer for Shopify IF NOT PROVIDED
@@ -337,9 +338,25 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                         
                         # SKU found in catalog!
                         # We have the correct URL and some data.
-                        # We still fetch the page to get Breadcrumbs and verify/enrich data.
                         target_url = catalog_data["product_url"]
                         
+                        # FAST MODE: Skip page fetch
+                        if fast_mode:
+                            results.append({
+                                "sku": sku, "url": url_in, "product_url": target_url,
+                                "group_id": catalog_data.get("product_id"),
+                                "variant_id": catalog_data.get("variant_id"),
+                                "name": catalog_data.get("name"),
+                                "category": catalog_data.get("product_type"),
+                                "breadcrumbs": None, # Not available in fast mode
+                                "price": catalog_data.get("price"),
+                                "rrp": catalog_data.get("rrp"),
+                                "discount_percent": None, # Could calculate
+                                "image_url": catalog_data.get("image_url"),
+                                "error": None
+                            })
+                            return
+
                         # Fetch the actual product page
                         status, html, final_url = await _fetch(client, target_url, delay_ms)
                         
