@@ -338,20 +338,29 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                         
                         # SKU found in catalog!
                         # We have the correct URL and some data.
-                        target_url = catalog_data["product_url"]
-                        
+                        # Calculate discount
+                        price = catalog_data.get("price")
+                        rrp = catalog_data.get("rrp")
+                        discount = None
+                        try:
+                            if price and rrp and float(rrp) > float(price):
+                                discount = round((1 - (float(price) / float(rrp))) * 100)
+                        except:
+                            pass
+
                         # FAST MODE: Skip page fetch
                         if fast_mode:
                             results.append({
                                 "sku": sku, "url": url_in, "product_url": target_url,
                                 "group_id": catalog_data.get("product_id"),
                                 "variant_id": catalog_data.get("variant_id"),
+                                "all_variant_ids": catalog_data.get("all_variant_ids", []),
                                 "name": catalog_data.get("name"),
                                 "category": catalog_data.get("product_type"),
                                 "breadcrumbs": None, # Not available in fast mode
-                                "price": catalog_data.get("price"),
-                                "rrp": catalog_data.get("rrp"),
-                                "discount_percent": None, # Could calculate
+                                "price": price,
+                                "rrp": rrp,
+                                "discount_percent": discount,
                                 "image_url": catalog_data.get("image_url"),
                                 "error": None
                             })
@@ -366,12 +375,13 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                                 "sku": sku, "url": url_in, "product_url": target_url,
                                 "group_id": catalog_data.get("product_id"),
                                 "variant_id": catalog_data.get("variant_id"),
+                                "all_variant_ids": catalog_data.get("all_variant_ids", []),
                                 "name": catalog_data.get("name"),
                                 "category": catalog_data.get("product_type"),
                                 "breadcrumbs": None,
-                                "price": catalog_data.get("price"),
-                                "rrp": catalog_data.get("rrp"),
-                                "discount_percent": None, # Could calculate
+                                "price": price,
+                                "rrp": rrp,
+                                "discount_percent": discount,
                                 "image_url": catalog_data.get("image_url"),
                                 "error": f"Page fetch failed ({status}), using catalog data."
                             })

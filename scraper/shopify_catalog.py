@@ -10,6 +10,7 @@ class ShopifyCatalogIndexer:
         self.base_url = base_url.rstrip("/")
         self.products_url = f"{self.base_url}/products.json"
         self.catalog: Dict[str, Dict[str, Any]] = {}
+        self.product_variants: Dict[int, List[int]] = {} # product_id -> list of variant_ids
         self.indexed = False
 
     async def fetch_catalog(self, limit_per_page: int = 250, delay_ms: int = 100) -> int:
@@ -78,6 +79,12 @@ class ShopifyCatalogIndexer:
         
         # Process variants
         variants = product.get("variants", [])
+        variant_ids = [v.get("id") for v in variants if v.get("id")]
+        
+        # Store variant IDs for this product
+        if product_id:
+            self.product_variants[product_id] = variant_ids
+
         for variant in variants:
             sku = variant.get("sku")
             if not sku:
@@ -126,4 +133,11 @@ class ShopifyCatalogIndexer:
         if not sku_key:
             sku_key = sku_str
             
-        return self.catalog.get(sku_key)
+        data = self.catalog.get(sku_key)
+        if data:
+            # Enrich with all sibling variant IDs
+            product_id = data.get("product_id")
+            if product_id:
+                data["all_variant_ids"] = self.product_variants.get(product_id, [])
+        
+        return data
