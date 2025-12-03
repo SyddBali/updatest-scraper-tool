@@ -70,7 +70,8 @@ def main():
     # Sidebar for configuration
     with st.sidebar:
         st.header("Configuration")
-        mode = st.radio("Mode", ["SKUs", "Page Crawler", "Catalog Indexer"])
+        st.header("Configuration")
+        mode = st.radio("Mode", ["SKUs", "Page Crawler"])
         
         cms_choice = st.selectbox(
             "CMS / Site Type",
@@ -78,8 +79,9 @@ def main():
             index=1  # Default to Shopify
         )
         
-        concurrency = st.slider("Concurrency", 1, 10, 3)
-        delay_ms = st.number_input("Delay (ms)", 0, 5000, 0)
+        # Hardcoded defaults since UI controls are removed
+        concurrency = 5
+        delay_ms = 0
         
         fast_mode = False
         if cms_choice == "Shopify":
@@ -235,55 +237,7 @@ def main():
                     "text/csv"
                 )
 
-    if mode == "Catalog Indexer":
-        st.info("This mode fetches the entire product catalog from a Shopify site's `products.json` endpoint.")
-        
-        target_url = st.text_input("Shopify Site URL", "https://legear.com.au")
-        
-        if st.button("Index Catalog", use_container_width=True):
-            from scraper.shopify_catalog import ShopifyCatalogIndexer
-            
-            indexer = ShopifyCatalogIndexer(target_url)
-            
-            with st.spinner("Indexing Shopify Catalog... (this may take a while for large sites)"):
-                # We need to run the async method
-                count = _run(indexer.fetch_catalog())
-            
-            st.success(f"Successfully indexed {count} variants!")
-            
-            if indexer.catalog:
-                # Convert catalog dict to list of dicts
-                data = list(indexer.catalog.values())
-                df = pd.DataFrame(data)
-                
-                # Show preview
-                st.dataframe(df, use_container_width=True)
-                
-                col_d1, col_d2 = st.columns(2)
-                
-                with col_d1:
-                    # 1. Full CSV
-                    csv_full = df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "Download Full Catalog (CSV)",
-                        csv_full,
-                        "shopify_catalog.csv",
-                        "text/csv",
-                        key="dl_cat_csv"
-                    )
-                
-                with col_d2:
-                    # 2. SKUs TXT
-                    # Get sorted SKUs
-                    all_skus = sorted(indexer.catalog.keys())
-                    txt_content = "\n".join(all_skus)
-                    st.download_button(
-                        "Download SKUs List (.txt)",
-                        txt_content,
-                        "all_skus.txt",
-                        "text/plain",
-                        key="dl_cat_txt"
-                    )
+
 
 if __name__ == "__main__":
     main()

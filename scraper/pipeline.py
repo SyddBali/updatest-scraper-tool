@@ -509,7 +509,7 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
 
 async def scrape_by_page(page_url: str,
                          cms_choice: Optional[str],
-                         is_category: bool,
+                         max_items: int,
                          concurrency: int,
                          delay_ms: int) -> List[Dict]:
     limits = httpx.Limits(max_connections=concurrency, max_keepalive_connections=concurrency)
@@ -527,30 +527,23 @@ async def scrape_by_page(page_url: str,
                 "error": f"HTTP {status}"
             }]
 
-        links: List[str] = []
-        if is_category:
-            soup = BeautifulSoup(html, "lxml")
-            links = _find_product_links(soup, final_url, cfg_key)
+        soup = BeautifulSoup(html, "lxml")
+        links = _find_product_links(soup, final_url, cfg_key)
 
+        if not links:
+            # Neto (e.g. MJS) fallback: build product URLs from SKUs on the category page
+            candidate_skus = _extract_candidate_skus(soup)
+            origin = _get_origin(final_url)
+            links = [f"{origin}/p/{sku}" for sku in candidate_skus if sku]
+            seen = set()
+            links = [u for u in links if (u not in seen and not seen.add(u))]
         
-        # Prepare links/results/semaphore based on page type
-        if is_category:
-            if links:
-                results: List[Dict] = []
-                sem = asyncio.Semaphore(concurrency)
-            else:
-                # Neto (e.g. MJS) fallback: build product URLs from SKUs on the category page
-                soup = BeautifulSoup(html, "lxml")
-                candidate_skus = _extract_candidate_skus(soup)
-                origin = _get_origin(final_url)
-                links = [f"{origin}/p/{sku}" for sku in candidate_skus if sku]
-                seen = set()
-                links = [u for u in links if (u not in seen and not seen.add(u))]
-                results: List[Dict] = []
-                sem = asyncio.Semaphore(concurrency)
-        else:
-            results: List[Dict] = []
-            sem = asyncio.Semaphore(concurrency)
+        # Limit items
+        if max_items > 0:
+            links = links[:max_items]
+
+        results: List[Dict] = []
+        sem = asyncio.Semaphore(concurrency)
 
         async def handle_product(url: str):
             async with sem:
@@ -566,9 +559,17 @@ async def scrape_by_page(page_url: str,
             else:
                 results.append({'product_url': url, 'error': f'HTTP {s}'})
 
-        await asyncio.gather(*(handle_product(u) for u in links))
-        return results
+        if links:
+            await asyncio.gather(*(handle_product(u) for u in links))
+        else:
+            # If no links found, maybe it's a single product page?
+            # Try parsing the page itself
+            try:
+                if cfg:
+                    results.append(parse_product(html, final_url, cfg))
+                else:
+                    results.append(auto_parser.parse_auto(html, final_url))
+            except Exception as e:
+                results.append({'product_url': final_url, 'error': f'Parse error: {e}'})
 
-        if cfg:
-            return [parse_product(html, final_url, cfg)]
-        return [auto_parser.parse_auto(html, final_url)]
+        return results
