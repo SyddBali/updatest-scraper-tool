@@ -39,7 +39,7 @@ def _normalise_rows(rows: List[Dict[str, Optional[str]]]) -> List[Dict[str, Opti
     return out
 
 def main():
-    st.set_page_config(page_title="Universal SKU Scraper", layout="wide")
+    st.set_page_config(page_title="B_T SKU Scraper", layout="wide")
 
     # Custom CSS for "Premium" look
     st.markdown("""
@@ -128,12 +128,12 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    st.title("Universal SKU Scraper")
+    st.title("B_T SKU Scraper")
     st.markdown("### Extract product data from Neto, Shopify, and WooCommerce")
 
     # Sidebar for configuration
     with st.sidebar:
-        st.header("Configuration")
+
 
         mode = st.radio("Mode", ["SKUs", "Page Crawler"])
         
