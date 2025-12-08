@@ -50,7 +50,21 @@ def main():
         font-family: 'Inter', sans-serif;
     }
 
-    /* Buttons (Universal) */
+    /* Titles */
+    h1, h2, h3 {
+        color: var(--text-color);
+    }
+    h1 {
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
+    }
+    h2, h3 {
+        font-weight: 600;
+        opacity: 0.9;
+    }
+
+    /* Buttons */
     .stButton>button {
         background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
         color: white;
@@ -70,7 +84,30 @@ def main():
         transform: translateY(0);
     }
 
-    /* Tabs (Universal) */
+    /* Inputs - Use Secondary Background for contrast if available, else standard */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea {
+        background-color: var(--secondary-background-color);
+        color: var(--text-color);
+        border: 1px solid rgba(128, 128, 128, 0.2);
+        border-radius: 8px;
+    }
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 1px #6366f1;
+    }
+
+    /* Sidebar - Streamlit handles background, we just refine borders */
+    [data-testid="stSidebar"] {
+        border-right: 1px solid rgba(128, 128, 128, 0.1);
+    }
+    
+    /* Layout containers */
+    .block-container {
+        padding-top: 2rem;
+        max-width: 1200px;
+    }
+    
+    /* Tabs */
     .stTabs [data-baseweb="tab-list"] {
         gap: 2rem;
     }
@@ -82,58 +119,13 @@ def main():
         gap: 0;
         padding-top: 10px;
         padding-bottom: 10px;
+        color: var(--text-color);
+        opacity: 0.7;
     }
     .stTabs [aria-selected="true"] {
         color: #6366f1;
+        opacity: 1;
         border-bottom-color: #6366f1;
-    }
-
-    /* Dark Mode Defaults (Media Query) */
-    @media (prefers-color-scheme: dark) {
-        h1 { color: #FFFFFF; }
-        h2, h3 { color: #E0E0E0; }
-        
-        .stTextInput>div>div>input, .stTextArea>div>div>textarea {
-            background-color: #1e1e1e;
-            border: 1px solid #333;
-            color: #fff;
-        }
-        
-        [data-testid="stSidebar"] {
-            background-color: #111827;
-            border-right: 1px solid #1f2937;
-        }
-        
-        .stTabs [data-baseweb="tab"] {
-            color: #9ca3af;
-        }
-    }
-
-    /* Light Mode Tweaks */
-    @media (prefers-color-scheme: light) {
-        h1 { color: #111827; }
-        h2, h3 { color: #374151; }
-        
-        .stTextInput>div>div>input, .stTextArea>div>div>textarea {
-            background-color: #ffffff;
-            border: 1px solid #e5e7eb;
-            color: #111827;
-        }
-        
-        [data-testid="stSidebar"] {
-            background-color: #f9fafb;
-            border-right: 1px solid #e5e7eb;
-        }
-
-        .stTabs [data-baseweb="tab"] {
-            color: #4b5563;
-        }
-    }
-
-    /* Focus states for inputs (Universal logic, color adapted) */
-    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 1px #6366f1;
     }
 
     </style>
