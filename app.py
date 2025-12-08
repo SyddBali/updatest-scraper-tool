@@ -50,19 +50,7 @@ def main():
         font-family: 'Inter', sans-serif;
     }
 
-    /* Titles */
-    h1 {
-        color: #FFFFFF;
-        font-weight: 700;
-        letter-spacing: -0.02em;
-        margin-bottom: 0.5rem;
-    }
-    h2, h3 {
-        color: #E0E0E0;
-        font-weight: 600;
-    }
-
-    /* Buttons */
+    /* Buttons (Universal) */
     .stButton>button {
         background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
         color: white;
@@ -82,31 +70,7 @@ def main():
         transform: translateY(0);
     }
 
-    /* Inputs */
-    .stTextInput>div>div>input, .stTextArea>div>div>textarea {
-        background-color: #1e1e1e;
-        border: 1px solid #333;
-        border-radius: 8px;
-        color: #fff;
-    }
-    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 1px #6366f1;
-    }
-
-    /* Sidebar */
-    [data-testid="stSidebar"] {
-        background-color: #111827;
-        border-right: 1px solid #1f2937;
-    }
-    
-    /* Layout containers */
-    .block-container {
-        padding-top: 2rem;
-        max-width: 1200px;
-    }
-    
-    /* Tabs */
+    /* Tabs (Universal) */
     .stTabs [data-baseweb="tab-list"] {
         gap: 2rem;
     }
@@ -115,7 +79,6 @@ def main():
         white-space: pre-wrap;
         background-color: transparent;
         border-radius: 4px;
-        color: #9ca3af;
         gap: 0;
         padding-top: 10px;
         padding-bottom: 10px;
@@ -123,6 +86,54 @@ def main():
     .stTabs [aria-selected="true"] {
         color: #6366f1;
         border-bottom-color: #6366f1;
+    }
+
+    /* Dark Mode Defaults (Media Query) */
+    @media (prefers-color-scheme: dark) {
+        h1 { color: #FFFFFF; }
+        h2, h3 { color: #E0E0E0; }
+        
+        .stTextInput>div>div>input, .stTextArea>div>div>textarea {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+            color: #fff;
+        }
+        
+        [data-testid="stSidebar"] {
+            background-color: #111827;
+            border-right: 1px solid #1f2937;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            color: #9ca3af;
+        }
+    }
+
+    /* Light Mode Tweaks */
+    @media (prefers-color-scheme: light) {
+        h1 { color: #111827; }
+        h2, h3 { color: #374151; }
+        
+        .stTextInput>div>div>input, .stTextArea>div>div>textarea {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            color: #111827;
+        }
+        
+        [data-testid="stSidebar"] {
+            background-color: #f9fafb;
+            border-right: 1px solid #e5e7eb;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            color: #4b5563;
+        }
+    }
+
+    /* Focus states for inputs (Universal logic, color adapted) */
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 1px #6366f1;
     }
 
     </style>
