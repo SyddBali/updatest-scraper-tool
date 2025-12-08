@@ -133,6 +133,7 @@ def main():
 
     # Sidebar for configuration
     with st.sidebar:
+        st.image("assets/logo.png", use_column_width=True)
 
 
         mode = st.radio("Mode", ["SKUs", "Page Crawler"])
