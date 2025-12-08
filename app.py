@@ -44,23 +44,87 @@ def main():
     # Custom CSS for "Premium" look
     st.markdown("""
     <style>
-    .main {
-        background-color: #f8f9fa;
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
+    html, body, [class*="css"]  {
+        font-family: 'Inter', sans-serif;
     }
+
+    /* Titles */
     h1 {
-        color: #1f77b4;
-        font-family: 'Helvetica Neue', sans-serif;
+        color: #FFFFFF;
+        font-weight: 700;
+        letter-spacing: -0.02em;
+        margin-bottom: 0.5rem;
     }
+    h2, h3 {
+        color: #E0E0E0;
+        font-weight: 600;
+    }
+
+    /* Buttons */
     .stButton>button {
-        background-color: #1f77b4;
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
         color: white;
-        border-radius: 5px;
+        border-radius: 8px;
         border: none;
-        padding: 0.5rem 1rem;
+        padding: 0.6rem 1.2rem;
+        font-weight: 600;
+        box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2), 0 2px 4px -1px rgba(79, 70, 229, 0.1);
+        transition: all 0.2s ease;
     }
     .stButton>button:hover {
-        background-color: #155a8a;
+        background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%);
+        box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3), 0 4px 6px -2px rgba(79, 70, 229, 0.15);
+        transform: translateY(-1px);
     }
+    .stButton>button:active {
+        transform: translateY(0);
+    }
+
+    /* Inputs */
+    .stTextInput>div>div>input, .stTextArea>div>div>textarea {
+        background-color: #1e1e1e;
+        border: 1px solid #333;
+        border-radius: 8px;
+        color: #fff;
+    }
+    .stTextInput>div>div>input:focus, .stTextArea>div>div>textarea:focus {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 1px #6366f1;
+    }
+
+    /* Sidebar */
+    [data-testid="stSidebar"] {
+        background-color: #111827;
+        border-right: 1px solid #1f2937;
+    }
+    
+    /* Layout containers */
+    .block-container {
+        padding-top: 2rem;
+        max-width: 1200px;
+    }
+    
+    /* Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 2rem;
+    }
+    .stTabs [data-baseweb="tab"] {
+        height: auto;
+        white-space: pre-wrap;
+        background-color: transparent;
+        border-radius: 4px;
+        color: #9ca3af;
+        gap: 0;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+    .stTabs [aria-selected="true"] {
+        color: #6366f1;
+        border-bottom-color: #6366f1;
+    }
+
     </style>
     """, unsafe_allow_html=True)
 
@@ -70,7 +134,7 @@ def main():
     # Sidebar for configuration
     with st.sidebar:
         st.header("Configuration")
-        st.header("Configuration")
+
         mode = st.radio("Mode", ["SKUs", "Page Crawler"])
         
         cms_choice = st.selectbox(
