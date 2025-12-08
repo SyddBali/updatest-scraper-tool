@@ -159,11 +159,10 @@ def main():
             st.success("Cache cleared!")
 
     if mode == "SKUs":
-        col1, col2 = st.columns(2)
-        with col1:
-            origin = st.text_input("Base URL (Origin)", "https://legear.com.au")
-        with col2:
-            url_pattern = st.text_input("URL Pattern (Optional)", "", help="e.g. https://site.com/p/{sku}")
+        origin = st.text_input("Base URL (Origin)", "https://legear.com.au")
+        # url_pattern removed as per request
+        url_pattern = "" 
+
 
         # Input Tabs
         tab1, tab2 = st.tabs(["Manual Input", "CSV Upload"])
@@ -173,11 +172,8 @@ def main():
         csv_file = None
 
         with tab1:
-            col_a, col_b = st.columns(2)
-            with col_a:
-                sku_input = st.text_area("Enter SKUs (one per line)", height=150, placeholder="ABC-123\nXYZ-789")
-            with col_b:
-                url_input = st.text_area("Enter URLs (one per line)", height=150, placeholder="https://site.com/p/abc")
+            # Removed Enter URLs section, so just show SKU input
+            sku_input = st.text_area("Enter SKUs (one per line)", height=150, placeholder="ABC-123\nXYZ-789")
         
         with tab2:
             csv_file = st.file_uploader("Upload CSV (must have 'sku' or 'url' column)", type=["csv"])
@@ -199,9 +195,9 @@ def main():
             if sku_input.strip():
                 raw_rows.extend([{"sku": s.strip()} for s in sku_input.splitlines() if s.strip()])
 
-            # 3. Manual URLs
-            if url_input.strip():
-                raw_rows.extend([{"url": u.strip()} for u in url_input.splitlines() if u.strip()])
+            # 3. Manual URLs (Removed from UI)
+            # if url_input.strip():
+            #    raw_rows.extend([{"url": u.strip()} for u in url_input.splitlines() if u.strip()])
 
             items = _normalise_rows(raw_rows)
 
