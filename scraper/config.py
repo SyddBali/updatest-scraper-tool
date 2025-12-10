@@ -31,9 +31,9 @@ SITE_CONFIGS: Dict[str, SiteConfig] = {
             ".productrrp, .rrp, .was-price, .price .compare, .compare-at"
         ),
         image_selector=(
-            "meta[property='og:image'], meta[name='twitter:image'], link[rel='image_src'], "
             "img[itemprop='image'], #main-image img, .productView-image img, "
-            ".product-image img, .woocommerce-product-gallery__image img, .product-gallery img"
+            ".product-image img, .woocommerce-product-gallery__image img, .product-gallery img,"
+            "meta[property='og:image'], meta[name='twitter:image'], link[rel='image_src']"
         ),
         discount_selector=(
             ".productsave, .mm_off, .badge--sale, .product__badge--save"

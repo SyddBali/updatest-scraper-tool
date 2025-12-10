@@ -53,7 +53,7 @@ def _origin_from_url(u: str) -> str:
 def _is_share_image(url: str) -> bool:
     if not url: return False
     u = url.lower()
-    return ("sopcial-share" in u) or ("social" in u and "share" in u)
+    return ("social-share" in u) or ("social" in u and "share" in u)
 
 # --- Extraction Functions ---
 
@@ -134,7 +134,9 @@ def _extract_image(soup: BeautifulSoup, config: SiteConfig, base_url: str) -> Op
             m = re.search(r'ImageURL\s*:\s*"([^"]+)"', s.string)
             if m:
                 img = m.group(1).strip()
-                return _normalise_img_url(img, base_domain)
+                norm = _normalise_img_url(img, base_domain)
+                if norm and not _is_share_image(norm):
+                    return norm
 
     # 2. Config selector
     if config.image_selector:
@@ -143,7 +145,9 @@ def _extract_image(soup: BeautifulSoup, config: SiteConfig, base_url: str) -> Op
             if el:
                 img = el.get("content") or el.get("src") or el.get("href") or el.get("data-src")
                 if img:
-                    return _normalise_img_url(img, base_domain)
+                    norm = _normalise_img_url(img, base_domain)
+                    if norm and not _is_share_image(norm):
+                        return norm
     
     # 3. JSON-LD
     for s in soup.find_all("script", type="application/ld+json"):
@@ -156,14 +160,20 @@ def _extract_image(soup: BeautifulSoup, config: SiteConfig, base_url: str) -> Op
             if isinstance(d, dict) and d.get("@type") in ("Product", "Offer"):
                 img = d.get("image")
                 if isinstance(img, list) and img:
-                    return _normalise_img_url(str(img[0]), base_domain)
+                    norm = _normalise_img_url(str(img[0]), base_domain)
+                    if norm and not _is_share_image(norm):
+                        return norm
                 if isinstance(img, str):
-                    return _normalise_img_url(img, base_domain)
+                    norm = _normalise_img_url(img, base_domain)
+                    if norm and not _is_share_image(norm):
+                        return norm
     
     # 4. Fallback (og:image)
     meta = soup.select_one("meta[property='og:image']")
     if meta:
-        return _normalise_img_url(meta.get("content"), base_domain)
+        norm = _normalise_img_url(meta.get("content"), base_domain)
+        if norm and not _is_share_image(norm):
+            return norm
         
     return None
 
