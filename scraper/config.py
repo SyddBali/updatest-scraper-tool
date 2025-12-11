@@ -31,6 +31,7 @@ SITE_CONFIGS: Dict[str, SiteConfig] = {
             ".productrrp, .rrp, .was-price, .price .compare, .compare-at"
         ),
         image_selector=(
+            ".product-image a, #main-image a, .productView-image a, "
             "img[itemprop='image'], #main-image img, .productView-image img, "
             ".product-image img, .woocommerce-product-gallery__image img, .product-gallery img,"
             "meta[property='og:image'], meta[name='twitter:image'], link[rel='image_src']"
