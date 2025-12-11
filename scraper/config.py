@@ -34,7 +34,8 @@ SITE_CONFIGS: Dict[str, SiteConfig] = {
             ".product-image a, #main-image a, .productView-image a, "
             "img[itemprop='image'], #main-image img, .productView-image img, "
             ".product-image img, .woocommerce-product-gallery__image img, .product-gallery img,"
-            "meta[property='og:image'], meta[name='twitter:image'], link[rel='image_src']"
+            "meta[property='og:image'], meta[name='twitter:image'], link[rel='image_src'], "
+            "a[data-lightbox='product-lightbox']"
         ),
         discount_selector=(
             ".productsave, .mm_off, .badge--sale, .product__badge--save"

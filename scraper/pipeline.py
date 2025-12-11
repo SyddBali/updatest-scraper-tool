@@ -396,7 +396,8 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                         # Parse the page
                         try:
                             cfg = _cfg_for_choice(cms_choice)
-                            data = parse_product(html, final_url, cfg, sku=sku)
+                            # Offload CPU-bound parsing to a thread
+                            data = await asyncio.wait_for(asyncio.to_thread(parse_product, html, final_url, cfg, sku), timeout=30)
                             
                             # Merge/Overwrite with Catalog Data (Catalog is authoritative for Price/Name/Image usually)
                             # But Page is authoritative for Breadcrumbs.
@@ -488,12 +489,15 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                 })
                 return
 
+
+
             try:
                 cfg = _cfg_for_choice(cms_choice)
                 if cfg:
-                    data = parse_product(html, final_url, cfg, sku=sku)
+                    # Offload CPU-bound parsing to a thread
+                    data = await asyncio.wait_for(asyncio.to_thread(parse_product, html, final_url, cfg, sku), timeout=30)
                 else:
-                    data = auto_parser.parse_auto(html, final_url, sku=sku)
+                    data = await asyncio.wait_for(asyncio.to_thread(auto_parser.parse_auto, html, final_url, sku), timeout=30)
                 results.append(data)
             except Exception as e:
                 results.append({
@@ -502,6 +506,7 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                     "price": None, "rrp": None, "discount_percent": None, "image_url": None,
                     "error": f"Parse error: {e}",
                 })
+
 
         await asyncio.gather(*(handle(r) for r in items))
 
@@ -551,9 +556,9 @@ async def scrape_by_page(page_url: str,
             if s == 200:
                 try:
                     if cfg:
-                        results.append(parse_product(h, fu, cfg))
+                        results.append(await asyncio.wait_for(asyncio.to_thread(parse_product, h, fu, cfg), timeout=30))
                     else:
-                        results.append(auto_parser.parse_auto(h, fu))
+                        results.append(await asyncio.wait_for(asyncio.to_thread(auto_parser.parse_auto, h, fu), timeout=30))
                 except Exception as e:
                     results.append({'product_url': url, 'error': f'Parse error: {e}'})
             else:
@@ -566,9 +571,9 @@ async def scrape_by_page(page_url: str,
             # Try parsing the page itself
             try:
                 if cfg:
-                    results.append(parse_product(html, final_url, cfg))
+                    results.append(await asyncio.wait_for(asyncio.to_thread(parse_product, html, final_url, cfg), timeout=30))
                 else:
-                    results.append(auto_parser.parse_auto(html, final_url))
+                    results.append(await asyncio.wait_for(asyncio.to_thread(auto_parser.parse_auto, html, final_url), timeout=30))
             except Exception as e:
                 results.append({'product_url': final_url, 'error': f'Parse error: {e}'})
 
