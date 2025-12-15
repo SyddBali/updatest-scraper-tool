@@ -447,7 +447,7 @@ def _extract_shopify_ids(soup: BeautifulSoup, target_sku: Optional[str]) -> tupl
 
     return group_id, variant_id, all_variant_ids
 
-def _extract_discount_badge(soup: BeautifulSoup) -> Optional[float]:
+def _extract_discount_badge(soup: BeautifulSoup, config: Optional[SiteConfig] = None) -> Optional[float]:
     """
     Extracts discount from badges like "50% OFF".
     """
@@ -457,6 +457,19 @@ def _extract_discount_badge(soup: BeautifulSoup) -> Optional[float]:
         nav.decompose()
     for elem in soup_copy.find_all(class_=re.compile(r'breadcrumb|navigation', re.I)):
         elem.decompose()
+    
+    # 0. Check config selectors first
+    if config and config.discount_selector:
+        for sel in config.discount_selector.split(","):
+            badge = soup_copy.select_one(sel.strip())
+            if badge:
+                text = badge.get_text(strip=True)
+                m = re.search(r'(\d+(?:\.\d+)?)%', text)
+                if m:
+                    try:
+                        return float(m.group(1))
+                    except ValueError:
+                        pass
     
     # 1. Look for specific badge class names
     for class_name in ["c-badge__item--percentage-off", "percentage-off", "discount-badge", "sale-badge", "badge--sale", "product-badge"]:
@@ -506,7 +519,7 @@ def parse_product(html: str, url: str, config: SiteConfig, sku: Optional[str] = 
 
         discount = None
         # Try badge extraction first (more accurate)
-        discount = _extract_discount_badge(soup)
+        discount = _extract_discount_badge(soup, config)
         
         # If badge extraction failed, try calculating from price/rrp
         if discount is None and price is not None and rrp is not None and rrp > 0:
