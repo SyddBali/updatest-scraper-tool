@@ -499,6 +499,13 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                 else:
                     data = await asyncio.wait_for(asyncio.to_thread(auto_parser.parse_auto, html, final_url, sku), timeout=30)
                 results.append(data)
+            except asyncio.TimeoutError:
+                 results.append({
+                    "sku": sku, "url": url, "product_url": final_url,
+                    "name": None, "category": None, "breadcrumbs": None,
+                    "price": None, "rrp": None, "discount_percent": None, "image_url": None,
+                    "error": "Parse Timeout (30s)",
+                })
             except Exception as e:
                 results.append({
                     "sku": sku, "url": url, "product_url": final_url,
@@ -559,6 +566,8 @@ async def scrape_by_page(page_url: str,
                         results.append(await asyncio.wait_for(asyncio.to_thread(parse_product, h, fu, cfg), timeout=30))
                     else:
                         results.append(await asyncio.wait_for(asyncio.to_thread(auto_parser.parse_auto, h, fu), timeout=30))
+                except asyncio.TimeoutError:
+                    results.append({'product_url': url, 'error': 'Parse Timeout (30s)'})
                 except Exception as e:
                     results.append({'product_url': url, 'error': f'Parse error: {e}'})
             else:
@@ -574,6 +583,8 @@ async def scrape_by_page(page_url: str,
                     results.append(await asyncio.wait_for(asyncio.to_thread(parse_product, html, final_url, cfg), timeout=30))
                 else:
                     results.append(await asyncio.wait_for(asyncio.to_thread(auto_parser.parse_auto, html, final_url), timeout=30))
+            except asyncio.TimeoutError:
+                results.append({'product_url': final_url, 'error': 'Parse Timeout (30s)'})
             except Exception as e:
                 results.append({'product_url': final_url, 'error': f'Parse error: {e}'})
 

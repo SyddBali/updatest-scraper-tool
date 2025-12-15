@@ -451,17 +451,10 @@ def _extract_discount_badge(soup: BeautifulSoup, config: Optional[SiteConfig] = 
     """
     Extracts discount from badges like "50% OFF".
     """
-    # First, remove breadcrumb/nav areas to avoid false positives
-    soup_copy = BeautifulSoup(str(soup), "lxml")
-    for nav in soup_copy.find_all(['nav', 'breadcrumb']):
-        nav.decompose()
-    for elem in soup_copy.find_all(class_=re.compile(r'breadcrumb|navigation', re.I)):
-        elem.decompose()
-    
-    # 0. Check config selectors first
+    # 0. Check config selectors first (AVOID CLONING SOUP IF FOUND)
     if config and config.discount_selector:
         for sel in config.discount_selector.split(","):
-            badge = soup_copy.select_one(sel.strip())
+            badge = soup.select_one(sel.strip())
             if badge:
                 text = badge.get_text(strip=True)
                 m = re.search(r'(\d+(?:\.\d+)?)%', text)
@@ -471,7 +464,14 @@ def _extract_discount_badge(soup: BeautifulSoup, config: Optional[SiteConfig] = 
                     except ValueError:
                         pass
     
-    # 1. Look for specific badge class names
+    # 1. Fallback: Look for specific badge class names (requires cleanup to avoid false positives)
+    # Clone soup only now
+    soup_copy = BeautifulSoup(str(soup), "lxml")
+    for nav in soup_copy.find_all(['nav', 'breadcrumb']):
+        nav.decompose()
+    for elem in soup_copy.find_all(class_=re.compile(r'breadcrumb|navigation', re.I)):
+        elem.decompose()
+    
     for class_name in ["c-badge__item--percentage-off", "percentage-off", "discount-badge", "sale-badge", "badge--sale", "product-badge"]:
         badge = soup_copy.find(class_=re.compile(class_name, re.I))
         if badge:
