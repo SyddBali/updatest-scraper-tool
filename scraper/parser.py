@@ -256,7 +256,7 @@ def _extract_breadcrumbs(soup: BeautifulSoup, forced_selector: Optional[str]) ->
         if links: return links
     return []
 
-def _extract_sku(soup: BeautifulSoup, url: str | None) -> Optional[str]:
+def _extract_sku(soup: BeautifulSoup, url: str | None, config: Optional[SiteConfig] = None) -> Optional[str]:
     # JSON-LD
     for s in soup.find_all("script", type="application/ld+json"):
         try:
@@ -269,6 +269,18 @@ def _extract_sku(soup: BeautifulSoup, url: str | None) -> Optional[str]:
                 sku = d.get("sku")
                 if isinstance(sku, (str, int)) and str(sku).strip():
                     return str(sku).strip()
+
+    # Config selector
+    if config and config.sku_selector:
+        for sel in config.sku_selector.split(","):
+            el = soup.select_one(sel.strip())
+            if el:
+                txt = el.get_text(strip=True) if hasattr(el, "get_text") else el.get("content")
+                if txt:
+                    # Clean up "SKU: 123" -> "123"
+                    m = re.search(r"(?:SKU\s*[:#-]?\s*)?([A-Za-z0-9._-]{3,})", txt, re.I)
+                    if m: return m.group(1).strip()
+                    return txt.strip()
     
     # Selectors
     el = soup.select_one("[itemprop='sku']") or soup.select_one("meta[itemprop='sku']")
@@ -339,7 +351,7 @@ def _extract_all_skus(soup: BeautifulSoup) -> List[str]:
                             if o.get("sku"): skus.add(str(o["sku"]).strip())
     
     # 4. Visible SKU
-    visible = _extract_sku(soup, None)
+    visible = _extract_sku(soup, None, None)
     if visible:
         skus.add(visible)
 
@@ -502,7 +514,7 @@ def parse_product(html: str, url: str, config: SiteConfig, sku: Optional[str] = 
     try:
         soup = BeautifulSoup(html, "lxml")
         if not sku:
-            sku = _extract_sku(soup, url) or None
+            sku = _extract_sku(soup, url, config) or None
 
         name = _extract_name(soup, config)
         breadcrumbs = _extract_breadcrumbs(soup, getattr(config, "breadcrumbs_selector", None))
