@@ -17,6 +17,7 @@ class SiteConfig:
     category_selector: Optional[str] = None
     breadcrumbs_selector: Optional[str] = None
     sku_selector: Optional[str] = None
+    sku_js_pattern: Optional[str] = None
     price_regex: Pattern = re.compile(r"[\d\.,]+")
     rrp_regex: Pattern = re.compile(r"[\d\.,]+")
 
@@ -24,6 +25,7 @@ SITE_CONFIGS: Dict[str, SiteConfig] = {
     "neto_default": SiteConfig(
         base_domain="neto.generic",
         sku_selector="[itemprop='sku'], .sku, .product-sku, span[itemprop='sku']",
+        sku_js_pattern=r"k4n\s*=\s*\{.*?sku\s*:\s*[\"']([^\"']+)[\"']",
         price_selector=(
             ".h1[itemprop='price'], [itemprop='price'], "
             ".productpricetext, .price .amount, .summary .price, "

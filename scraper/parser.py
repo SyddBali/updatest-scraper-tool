@@ -281,6 +281,13 @@ def _extract_sku(soup: BeautifulSoup, url: str | None, config: Optional[SiteConf
                     m = re.search(r"(?:SKU\s*[:#-]?\s*)?([A-Za-z0-9._-]{3,})", txt, re.I)
                     if m: return m.group(1).strip()
                     return txt.strip()
+        
+        # JS Pattern
+        if config.sku_js_pattern:
+            for s in soup.find_all("script"):
+                if not s.string: continue
+                m = re.search(config.sku_js_pattern, s.string, re.DOTALL | re.IGNORECASE)
+                if m: return m.group(1).strip()
     
     # Selectors
     el = soup.select_one("[itemprop='sku']") or soup.select_one("meta[itemprop='sku']")
