@@ -188,6 +188,72 @@ def _extract_image(soup: BeautifulSoup, config: SiteConfig, base_url: str) -> Op
         
     return None
 
+def _extract_all_images(soup: BeautifulSoup, config: SiteConfig, base_url: str) -> List[str]:
+    """
+    Extracts all unique product images found via selectors, JSON-LD, or scripts.
+    """
+    images: List[str] = []
+    base_domain = _origin_from_url(base_url).replace("https://", "").replace("http://", "")
+
+    # 1. Config selector (Primary source for galleries)
+    if config.image_selector:
+        for sel in config.image_selector.split(","):
+            for el in soup.select(sel.strip()):
+                img = el.get("content") or el.get("src") or el.get("href") or el.get("data-src")
+                if img:
+                    images.append(img)
+
+    # 2. Try JS "var meta" (Shopify - often has "images" array)
+    for s in soup.find_all("script"):
+        if s.string and "var meta =" in s.string:
+            # Look for "images": [...]
+            m = re.search(r'"images"\s*:\s*(\[.*?\])', s.string, re.DOTALL)
+            if m:
+                try:
+                    js_imgs = json.loads(m.group(1))
+                    for i in js_imgs:
+                        if isinstance(i, str):
+                            images.append(i)
+                except Exception:
+                    pass
+            # Also try single ImageURL if list failed or empty
+            if not images:
+                 m_single = re.search(r'ImageURL\s*:\s*"([^"]+)"', s.string)
+                 if m_single:
+                     images.append(m_single.group(1))
+
+    # 3. JSON-LD
+    for s in soup.find_all("script", type="application/ld+json"):
+        try:
+            data = json.loads(s.string or "")
+        except Exception:
+            continue
+        items = data if isinstance(data, list) else [data]
+        for d in items:
+            if isinstance(d, dict) and d.get("@type") in ("Product", "Offer"):
+                img = d.get("image")
+                if isinstance(img, list):
+                    for i in img:
+                        images.append(str(i))
+                elif isinstance(img, str):
+                    images.append(img)
+
+    # 4. Fallback (og:image) - usually just one, but add it just in case
+    meta = soup.select_one("meta[property='og:image']")
+    if meta and meta.get("content"):
+        images.append(meta.get("content"))
+
+    # Normalise and Deduplicate
+    seen = set()
+    final = []
+    for raw in images:
+        norm = _normalise_img_url(raw, base_domain)
+        if norm and norm not in seen and not _is_share_image(norm):
+            seen.add(norm)
+            final.append(norm)
+    
+    return final
+
 def _extract_name(soup: BeautifulSoup, config: SiteConfig) -> Optional[str]:
     # 1. Try JS "var item"
     for s in soup.find_all("script"):
@@ -540,7 +606,11 @@ def parse_product(html: str, url: str, config: SiteConfig, sku: Optional[str] = 
 
         price = _extract_price(soup, config)
         rrp = _extract_rrp(soup, config)
-        image_url = _extract_image(soup, config, url)
+        rrp = _extract_rrp(soup, config)
+        
+        # Multi-image extraction
+        all_images = _extract_all_images(soup, config, url)
+        image_url = all_images[0] if all_images else None
         
         all_skus = _extract_all_skus(soup)
         
@@ -572,6 +642,12 @@ def parse_product(html: str, url: str, config: SiteConfig, sku: Optional[str] = 
             "image_url": image_url,
             "error": None,
         }
+        
+        # Add secondary images
+        for i, img in enumerate(all_images[1:], start=2):
+            result[f"image_url_{i}"] = img
+            
+        return result
     except Exception as e:
         return {
             "sku": sku,

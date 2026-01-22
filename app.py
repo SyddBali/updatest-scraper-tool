@@ -255,7 +255,9 @@ def main():
             # Reorder columns if possible
             preferred = ["sku", "product_url", "name", "price", "rrp", "discount_percent", 
                        "group_id", "variant_id", "all_variant_ids",
-                       "category", "breadcrumbs", "image_url", "error", "url"]
+                       "category", "breadcrumbs", "image_url", 
+                       "image_url_2", "image_url_3", "image_url_4", "image_url_5",
+                       "error", "url"]
             cols = [c for c in preferred if c in df.columns] + [c for c in df.columns if c not in preferred]
             df = df[cols]
 
@@ -268,23 +270,27 @@ def main():
                 key="sku_col_select"
             )
 
-            if selected_cols:
-                df_display = df[selected_cols]
-                st.dataframe(df_display, use_container_width=True)
-                
-                # CSV Download
-                csv = df_display.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    "Download CSV",
-                    csv,
-                    "results.csv",
-                    "text/csv",
-                    key='download-csv'
-                )
+                if selected_cols:
+                    # Enforce original column order
+                    all_cols = list(df.columns)
+                    sorted_cols = sorted(selected_cols, key=all_cols.index)
+                    
+                    df_display = df[sorted_cols]
+                    st.dataframe(df_display, use_container_width=True)
+                    
+                    # CSV Download
+                    csv = df_display.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        "Download CSV",
+                        csv,
+                        "results.csv",
+                        "text/csv",
+                        key='download-csv'
+                    )
+                else:
+                    st.warning("Please select at least one column to export.")
             else:
-                st.warning("Please select at least one column to export.")
-        elif 'sku_results' in st.session_state and not st.session_state['sku_results']:
-             st.info("No results found.")
+                st.info("No results found.")
 
     else:
         col1, col2 = st.columns(2)
@@ -320,7 +326,11 @@ def main():
             )
 
             if selected_cols:
-                df_display = df[selected_cols]
+                # Enforce original column order
+                all_cols = list(df.columns)
+                sorted_cols = sorted(selected_cols, key=all_cols.index)
+                
+                df_display = df[sorted_cols]
                 st.dataframe(df_display, use_container_width=True)
                 
                 csv = df_display.to_csv(index=False).encode('utf-8')
