@@ -239,49 +239,52 @@ def main():
                     items, cms_choice, origin, url_pattern, concurrency, delay_ms, indexer=indexer, fast_mode=fast_mode
                 ))
             
+                st.session_state['sku_results'] = results
+            
             st.success(f"Completed! Processed {len(results)} items.")
             
-            # Display results
-            if results:
-                df = pd.DataFrame(results)
+        # Display results from session state if available
+        if 'sku_results' in st.session_state and st.session_state['sku_results']:
+            results = st.session_state['sku_results']
+            df = pd.DataFrame(results)
+            
+            # Ensure all_variant_ids is string to avoid Arrow errors
+            if "all_variant_ids" in df.columns:
+                df["all_variant_ids"] = df["all_variant_ids"].astype(str)
+
+            # Reorder columns if possible
+            preferred = ["sku", "product_url", "name", "price", "rrp", "discount_percent", 
+                       "group_id", "variant_id", "all_variant_ids",
+                       "category", "breadcrumbs", "image_url", "error", "url"]
+            cols = [c for c in preferred if c in df.columns] + [c for c in df.columns if c not in preferred]
+            df = df[cols]
+
+            # Column selection
+            st.write("### Export Options")
+            selected_cols = st.multiselect(
+                "Choose columns to export:",
+                options=list(df.columns),
+                default=list(df.columns),
+                key="sku_col_select"
+            )
+
+            if selected_cols:
+                df_display = df[selected_cols]
+                st.dataframe(df_display, use_container_width=True)
                 
-                # Ensure all_variant_ids is string to avoid Arrow errors
-                if "all_variant_ids" in df.columns:
-                    df["all_variant_ids"] = df["all_variant_ids"].astype(str)
-
-                # Reorder columns if possible
-                preferred = ["sku", "product_url", "name", "price", "rrp", "discount_percent", 
-                           "group_id", "variant_id", "all_variant_ids",
-                           "category", "breadcrumbs", "image_url", "error", "url"]
-                cols = [c for c in preferred if c in df.columns] + [c for c in df.columns if c not in preferred]
-                df = df[cols]
-
-                # Column selection
-                st.write("### Export Options")
-                selected_cols = st.multiselect(
-                    "Choose columns to export:",
-                    options=list(df.columns),
-                    default=list(df.columns),
-                    key="sku_col_select"
+                # CSV Download
+                csv = df_display.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    "Download CSV",
+                    csv,
+                    "results.csv",
+                    "text/csv",
+                    key='download-csv'
                 )
-
-                if selected_cols:
-                    df_display = df[selected_cols]
-                    st.dataframe(df_display, use_container_width=True)
-                    
-                    # CSV Download
-                    csv = df_display.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "Download CSV",
-                        csv,
-                        "results.csv",
-                        "text/csv",
-                        key='download-csv'
-                    )
-                else:
-                    st.warning("Please select at least one column to export.")
             else:
-                st.info("No results found.")
+                st.warning("Please select at least one column to export.")
+        elif 'sku_results' in st.session_state and not st.session_state['sku_results']:
+             st.info("No results found.")
 
     else:
         col1, col2 = st.columns(2)
@@ -300,32 +303,35 @@ def main():
                     page_url, cms_choice, max_items, concurrency, delay_ms
                 ))
 
+                st.session_state['crawl_results'] = results
+
             st.success(f"Crawled {len(results)} items.")
             
-            if results:
-                df = pd.DataFrame(results)
-                # Column selection
-                st.write("### Export Options")
-                selected_cols = st.multiselect(
-                    "Choose columns to export:",
-                    options=list(df.columns),
-                    default=list(df.columns),
-                    key="crawler_col_select"
-                )
+        if 'crawl_results' in st.session_state and st.session_state['crawl_results']:
+            results = st.session_state['crawl_results']
+            df = pd.DataFrame(results)
+            # Column selection
+            st.write("### Export Options")
+            selected_cols = st.multiselect(
+                "Choose columns to export:",
+                options=list(df.columns),
+                default=list(df.columns),
+                key="crawler_col_select"
+            )
 
-                if selected_cols:
-                    df_display = df[selected_cols]
-                    st.dataframe(df_display, use_container_width=True)
-                    
-                    csv = df_display.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "Download CSV",
-                        csv,
-                        "crawl_results.csv",
-                        "text/csv"
-                    )
-                else:
-                    st.warning("Please select at least one column to export.")
+            if selected_cols:
+                df_display = df[selected_cols]
+                st.dataframe(df_display, use_container_width=True)
+                
+                csv = df_display.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    "Download CSV",
+                    csv,
+                    "crawl_results.csv",
+                    "text/csv"
+                )
+            else:
+                st.warning("Please select at least one column to export.")
 
 
 
