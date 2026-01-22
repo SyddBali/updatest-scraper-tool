@@ -270,25 +270,25 @@ def main():
                 key="sku_col_select"
             )
 
-                if selected_cols:
-                    # Enforce original column order
-                    all_cols = list(df.columns)
-                    sorted_cols = sorted(selected_cols, key=all_cols.index)
-                    
-                    df_display = df[sorted_cols]
-                    st.dataframe(df_display, use_container_width=True)
-                    
-                    # CSV Download
-                    csv = df_display.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        "Download CSV",
-                        csv,
-                        "results.csv",
-                        "text/csv",
-                        key='download-csv'
-                    )
-                else:
-                    st.warning("Please select at least one column to export.")
+            if selected_cols:
+                # Enforce original column order
+                all_cols = list(df.columns)
+                sorted_cols = sorted(selected_cols, key=all_cols.index)
+                
+                df_display = df[sorted_cols]
+                st.dataframe(df_display, use_container_width=True)
+                
+                # CSV Download
+                csv = df_display.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    "Download CSV",
+                    csv,
+                    "results.csv",
+                    "text/csv",
+                    key='download-csv'
+                )
+            else:
+                st.warning("Please select at least one column to export.")
             else:
                 st.info("No results found.")
 
