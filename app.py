@@ -289,8 +289,8 @@ def main():
                 )
             else:
                 st.warning("Please select at least one column to export.")
-            else:
-                st.info("No results found.")
+        elif 'sku_results' in st.session_state and not st.session_state['sku_results']:
+             st.info("No results found.")
 
     else:
         col1, col2 = st.columns(2)
