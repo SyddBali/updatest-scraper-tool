@@ -78,7 +78,9 @@ SITE_CONFIGS: Dict[str, SiteConfig] = {
         image_selector=(
             "meta[property='og:image'], meta[name='twitter:image'], "
             "img[src*='/products/'][data-src], img[src*='/cdn/shop/products/'], "
-            ".product-single__photo img, .product__media img"
+            "img[data-gallery='gallery'], "
+            ".product-single__photo img, .product__media img, "
+            ".c-product-main__media img, .swiper-slide img"
         ),
         # Discount: sale badges, saved amount text
         discount_selector=(

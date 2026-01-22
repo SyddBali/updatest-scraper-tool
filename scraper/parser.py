@@ -40,6 +40,7 @@ def _normalise_img_url(raw: Optional[str], base_domain: Optional[str]) -> Option
     if not raw: return None
     raw = raw.strip()
     if raw.startswith("//"): return "https:" + raw
+    if raw.startswith("http:"): return raw.replace("http:", "https:", 1)
     if raw.startswith("/"): return f"https://{base_domain}{raw}" if base_domain else raw
     return raw
 
@@ -53,6 +54,7 @@ def _origin_from_url(u: str) -> str:
 def _is_share_image(url: str) -> bool:
     if not url: return False
     u = url.lower()
+    if ".svg" in u: return True
     return ("social-share" in u) or ("social" in u and "share" in u)
 
 # --- Extraction Functions ---
@@ -248,9 +250,12 @@ def _extract_all_images(soup: BeautifulSoup, config: SiteConfig, base_url: str) 
     final = []
     for raw in images:
         norm = _normalise_img_url(raw, base_domain)
-        if norm and norm not in seen and not _is_share_image(norm):
-            seen.add(norm)
-            final.append(norm)
+        if norm and not _is_share_image(norm):
+            # Deduplicate based on URL without query params (e.g. ignore width/height/v)
+            dedupe_key = norm.split('?')[0]
+            if dedupe_key not in seen:
+                seen.add(dedupe_key)
+                final.append(norm)
     
     return final
 
