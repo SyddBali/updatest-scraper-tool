@@ -256,17 +256,30 @@ def main():
                 cols = [c for c in preferred if c in df.columns] + [c for c in df.columns if c not in preferred]
                 df = df[cols]
 
-                st.dataframe(df, use_container_width=True)
-                
-                # CSV Download
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    "Download CSV",
-                    csv,
-                    "results.csv",
-                    "text/csv",
-                    key='download-csv'
+                # Column selection
+                st.write("### Export Options")
+                selected_cols = st.multiselect(
+                    "Choose columns to export:",
+                    options=list(df.columns),
+                    default=list(df.columns),
+                    key="sku_col_select"
                 )
+
+                if selected_cols:
+                    df_display = df[selected_cols]
+                    st.dataframe(df_display, use_container_width=True)
+                    
+                    # CSV Download
+                    csv = df_display.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        "Download CSV",
+                        csv,
+                        "results.csv",
+                        "text/csv",
+                        key='download-csv'
+                    )
+                else:
+                    st.warning("Please select at least one column to export.")
             else:
                 st.info("No results found.")
 
@@ -291,15 +304,28 @@ def main():
             
             if results:
                 df = pd.DataFrame(results)
-                st.dataframe(df, use_container_width=True)
-                
-                csv = df.to_csv(index=False).encode('utf-8')
-                st.download_button(
-                    "Download CSV",
-                    csv,
-                    "crawl_results.csv",
-                    "text/csv"
+                # Column selection
+                st.write("### Export Options")
+                selected_cols = st.multiselect(
+                    "Choose columns to export:",
+                    options=list(df.columns),
+                    default=list(df.columns),
+                    key="crawler_col_select"
                 )
+
+                if selected_cols:
+                    df_display = df[selected_cols]
+                    st.dataframe(df_display, use_container_width=True)
+                    
+                    csv = df_display.to_csv(index=False).encode('utf-8')
+                    st.download_button(
+                        "Download CSV",
+                        csv,
+                        "crawl_results.csv",
+                        "text/csv"
+                    )
+                else:
+                    st.warning("Please select at least one column to export.")
 
 
 

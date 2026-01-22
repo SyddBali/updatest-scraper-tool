@@ -58,6 +58,17 @@ def _is_share_image(url: str) -> bool:
 # --- Extraction Functions ---
 
 def _extract_price(soup: BeautifulSoup, config: SiteConfig) -> Optional[float]:
+    # 0. Configured JS Pattern (Priority)
+    if config and config.price_js_pattern:
+        for s in soup.find_all("script"):
+            if not s.string: continue
+            m = re.search(config.price_js_pattern, s.string, re.DOTALL | re.IGNORECASE)
+            if m:
+                try:
+                    return float(m.group(1).replace(",", "").strip())
+                except ValueError:
+                    pass
+
     # 1. Try JS "var item" (Klaviyo/Shopify)
     for s in soup.find_all("script"):
         if s.string and "var item" in s.string:
