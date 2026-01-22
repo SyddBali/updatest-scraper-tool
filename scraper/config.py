@@ -83,7 +83,8 @@ SITE_CONFIGS: Dict[str, SiteConfig] = {
             "img[src*='/products/'][data-src], img[src*='/cdn/shop/products/'], "
             "img[data-gallery='gallery'], "
             ".product-single__photo img, .product__media img, "
-            ".c-product-main__media img, .swiper-slide img"
+            ".c-product-main__media img, .swiper-slide img, "
+            ".c-product-main__info-thumbnails__thumbnail img, .u-object-image"
         ),
         # Discount: sale badges, saved amount text
         discount_selector=(
