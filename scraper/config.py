@@ -43,6 +43,7 @@ SITE_CONFIGS: Dict[str, SiteConfig] = {
             ".product-image img, .woocommerce-product-gallery__image img, .product-gallery img, "
             ".product-thumbnails img, .product-thumbnails a, "
             ".owl-item .thumbnail-image, .thumb-image, "
+            ".embed-responsive-item img, .product-image-small, "
             "meta[property='og:image'], meta[name='twitter:image'], link[rel='image_src']"
         ),
         discount_selector=(
