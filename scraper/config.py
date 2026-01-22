@@ -40,7 +40,9 @@ SITE_CONFIGS: Dict[str, SiteConfig] = {
             "a[data-lightbox='product-lightbox'], "
             ".product-image a, #main-image a, .productView-image a, "
             "img[itemprop='image'], #main-image img, .productView-image img, "
-            ".product-image img, .woocommerce-product-gallery__image img, .product-gallery img,"
+            ".product-image img, .woocommerce-product-gallery__image img, .product-gallery img, "
+            ".product-thumbnails img, .product-thumbnails a, "
+            ".owl-item .thumbnail-image, .thumb-image, "
             "meta[property='og:image'], meta[name='twitter:image'], link[rel='image_src']"
         ),
         discount_selector=(

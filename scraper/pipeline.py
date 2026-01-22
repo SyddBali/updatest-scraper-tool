@@ -368,6 +368,10 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                                 "rrp": rrp,
                                 "discount_percent": discount,
                                 "image_url": catalog_data.get("image_url"),
+                                "image_url_2": catalog_data.get("image_url_2"),
+                                "image_url_3": catalog_data.get("image_url_3"),
+                                "image_url_4": catalog_data.get("image_url_4"),
+                                "image_url_5": catalog_data.get("image_url_5"),
                                 "error": None
                             })
                             return
@@ -389,6 +393,10 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                                 "rrp": rrp,
                                 "discount_percent": discount,
                                 "image_url": catalog_data.get("image_url"),
+                                "image_url_2": catalog_data.get("image_url_2"),
+                                "image_url_3": catalog_data.get("image_url_3"),
+                                "image_url_4": catalog_data.get("image_url_4"),
+                                "image_url_5": catalog_data.get("image_url_5"),
                                 "error": f"Page fetch failed ({status}), using catalog data."
                             })
                             return
@@ -412,6 +420,12 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                                 data["rrp"] = catalog_data.get("rrp")
                             if not data.get("image_url"):
                                 data["image_url"] = catalog_data.get("image_url")
+                            # Merge extra images if missing
+                            for i in range(2, 6):
+                                key = f"image_url_{i}"
+                                if not data.get(key):
+                                    data[key] = catalog_data.get(key)
+                                    
                             if not data.get("name"):
                                 data["name"] = catalog_data.get("name")
                             if not data.get("category"):
@@ -456,6 +470,10 @@ async def scrape_items(items: List[Dict[str, Optional[str]]],
                                 "rrp": catalog_data.get("rrp"),
                                 "discount_percent": None,
                                 "image_url": catalog_data.get("image_url"),
+                                "image_url_2": catalog_data.get("image_url_2"),
+                                "image_url_3": catalog_data.get("image_url_3"),
+                                "image_url_4": catalog_data.get("image_url_4"),
+                                "image_url_5": catalog_data.get("image_url_5"),
                                 "error": f"Parse error: {e} (using catalog data)"
                             })
                             return

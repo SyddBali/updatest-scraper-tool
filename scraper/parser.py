@@ -630,7 +630,7 @@ def parse_product(html: str, url: str, config: SiteConfig, sku: Optional[str] = 
         if discount is None and price is not None and rrp is not None and rrp > 0:
             discount = round((1 - (price / rrp)) * 100, 2)
 
-        return {
+        result = {
             "sku": sku,
             "group_id": group_id,
             "variant_id": variant_id,
@@ -649,8 +649,9 @@ def parse_product(html: str, url: str, config: SiteConfig, sku: Optional[str] = 
         }
         
         # Add secondary images
-        for i, img in enumerate(all_images[1:], start=2):
-            result[f"image_url_{i}"] = img
+        if all_images and len(all_images) > 1:
+            for i, img in enumerate(all_images[1:5], start=2): # Limit to 5 images total
+                result[f"image_url_{i}"] = img
             
         return result
     except Exception as e:

@@ -73,9 +73,10 @@ class ShopifyCatalogIndexer:
         product_type = product.get("product_type")
         published_at = product.get("published_at")
         
-        # Get main image
+        # Get all images (limit to 5)
         images = product.get("images", [])
-        main_image = images[0].get("src") if images else None
+        image_urls = [img.get("src") for img in images if img.get("src")]
+        main_image = image_urls[0] if image_urls else None
         
         # Process variants
         variants = product.get("variants", [])
@@ -113,6 +114,10 @@ class ShopifyCatalogIndexer:
                 "product_type": product_type,
                 "published_at": published_at,
                 "image_url": main_image, # Variant might have specific image, but main is safe fallback
+                "image_url_2": image_urls[1] if len(image_urls) > 1 else None,
+                "image_url_3": image_urls[2] if len(image_urls) > 2 else None,
+                "image_url_4": image_urls[3] if len(image_urls) > 3 else None,
+                "image_url_5": image_urls[4] if len(image_urls) > 4 else None,
                 "product_url": f"{self.base_url}/products/{handle}?variant={variant.get('id')}"
             }
             

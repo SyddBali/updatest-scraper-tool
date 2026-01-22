@@ -248,6 +248,12 @@ def main():
             results = st.session_state['sku_results']
             df = pd.DataFrame(results)
             
+            # Ensure secondary image columns exist
+            for i in range(2, 6):
+                col = f"image_url_{i}"
+                if col not in df.columns:
+                    df[col] = None
+
             # Ensure all_variant_ids is string to avoid Arrow errors
             if "all_variant_ids" in df.columns:
                 df["all_variant_ids"] = df["all_variant_ids"].astype(str)
@@ -316,6 +322,13 @@ def main():
         if 'crawl_results' in st.session_state and st.session_state['crawl_results']:
             results = st.session_state['crawl_results']
             df = pd.DataFrame(results)
+            
+            # Ensure secondary image columns exist
+            for i in range(2, 6):
+                col = f"image_url_{i}"
+                if col not in df.columns:
+                    df[col] = None
+
             # Column selection
             st.write("### Export Options")
             selected_cols = st.multiselect(
